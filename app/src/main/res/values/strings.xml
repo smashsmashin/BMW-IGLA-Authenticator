@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">NFC Auth</string>
+
+    <!-- MainActivity Status Messages -->
+    <string name="status_waiting_for_nfc">Waiting for NFC tag...</string>
+    <string name="status_nfc_not_available">NFC is not available on this device.</string>
+    <string name="status_nfc_disabled">NFC is disabled. Please enable it in settings.</string>
+    <string name="status_nfc_tag_detected">NFC Tag Detected!</string>
+    <string name="status_nfc_read_error">Error reading NFC Tag.</string>
+    <string name="status_nfc_tag_scanned_authenticate">NFC Tag Scanned. Authenticate to continue.</string>
+
+    <!-- Biometric Prompt -->
+    <string name="biometric_title">Biometric login for NFC Auth</string>
+    <string name="biometric_subtitle">Log in using your biometric credential</string>
+    <string name="biometric_negative_button">Use account password</string> <!-- Or "Cancel" -->
+    <string name="biometric_auth_error">Authentication error: %1$s</string>
+    <string name="biometric_auth_succeeded">Authentication succeeded!</string>
+    <string name="biometric_auth_failed">Authentication failed</string>
+    <string name="biometric_auth_succeeded_author_id">Biometric authentication succeeded. Enabling Author ID...</string>
+    <string name="biometric_auth_error_status">Biometric authentication error: %1$s</string>
+    <string name="biometric_auth_failed_status">Biometric authentication failed.</string>
+    <string name="biometric_not_available">Biometric authentication not available or not enrolled.</string>
+    <string name="biometric_status_not_set_up">Biometric authentication not set up.</string>
+
+    <!-- Biometric Hardware Status -->
+    <string name="biometric_no_hardware">No biometric features available on this device.</string>
+    <string name="biometric_hw_unavailable">Biometric features are currently unavailable.</string>
+    <string name="biometric_none_enrolled">No biometric credentials enrolled. Please enroll in settings.</string>
+    <string name="biometric_status_unknown">Biometric status unknown.</string>
+
+    <!-- AuthorIdActivity Messages -->
+    <string name="author_id_enabled_successfully">Author ID Enabled Successfully!</string>
+    <string name="author_id_status_default">Author ID Status</string>
+
+    <!-- General Toasts -->
+    <string name="toast_nfc_not_available">NFC is not available on this device.</string>
+    <string name="toast_nfc_enable_in_settings">Please enable NFC in Settings.</string>
+    <string name="toast_biometric_auth_error">Authentication error: %1$s</string>
+    <string name="toast_biometric_auth_succeeded">Authentication succeeded!</string>
+    <string name="toast_biometric_auth_failed">Authentication failed</string>
+    <string name="toast_biometric_no_hardware">No biometric features available on this device.</string>
+    <string name="toast_biometric_hw_unavailable">Biometric features are currently unavailable.</string>
+    <string name="toast_biometric_none_enrolled">No biometric credentials enrolled. Please enroll in settings.</string>
+    <string name="toast_biometric_status_unknown">Biometric status unknown.</string>
+    <string name="toast_biometric_not_available_or_enrolled">Biometric authentication not available or not enrolled.</string>
+
+</resources>
