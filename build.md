@@ -17,7 +17,19 @@ From [java - How to make an Android app without using Android Studio? - Stack Ov
 * Use [`avdmanager`](https://developer.android.com/studio/command-line/avdmanager) to manage the Android device emulators of the Android SDK.
 
 * If required, also install [`gradle`](https://gradle.org/) according to the [Installation](https://gradle.org/install) guide. Gradle can then be used from CLI, as described in its [Command-Line Interface](https://docs.gradle.org/current/userguide/command_line_interface.html) user guide.
+```
+gradle wrapper --gradle-version 8.9
+./gradlew clean
+./gradlew build
+```
 
+* Connect Android phone as described in [How to use wireless ADB on your Android phone or tablet](https://www.androidpolice.com/use-wireless-adb-android-phone/)
+```
+adb pair
+adb connect ip:port
+adb devices
+adb -s device install *.apk
+```
 
 From [sdkmanager](https://developer.android.com/tools/sdkmanager)
 
