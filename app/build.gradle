@@ -1,0 +1,54 @@
+plugins {
+    id 'com.android.application'
+    // id 'org.jetbrains.kotlin.android' // Uncomment if using Kotlin
+}
+
+android {
+    namespace 'com.example.wirelessunlock'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.wirelessunlock"
+        minSdk 26 // Android 8.0 (Oreo) - Good baseline for Camera2 and background restrictions handling
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    // If using Kotlin:
+    // kotlinOptions {
+    //     jvmTarget = '1.8'
+    // }
+
+    // In case the placeholder PNG causes issues, this can help.
+    // Usually, actual PNGs are fine.
+    aaptOptions {
+        cruncherEnabled = false
+    }
+}
+
+dependencies {
+    // No specific AndroidX libraries are strictly needed for this minimal example,
+    // but typically you'd have some, e.g., appcompat.
+    // For this specific feature set, platform APIs are sufficient.
+
+    // Example of how you'd add dependencies:
+    // implementation 'androidx.core:core-ktx:1.9.0' // If using Kotlin
+    // implementation 'androidx.appcompat:appcompat:1.6.1'
+    // implementation 'com.google.android.material:material:1.10.0'
+    // testImplementation 'junit:junit:4.13.2'
+    // androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    // androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+}
