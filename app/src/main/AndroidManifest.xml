@@ -1,0 +1,64 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.wirelessunlock">
+
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Required for flashlight -->
+    <uses-feature android:name="android.hardware.camera" />
+    <uses-feature android:name="android.hardware.camera.flash" />
+
+
+    <application
+        android:allowBackup="true"
+        android:label="WirelessUnlock"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.DeviceDefault"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
+
+        <receiver
+            android:name=".PowerConnectionReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                <action android:name="android.intent.action.USER_PRESENT" />
+                <!-- Using BATTERY_CHANGED for more robust initial state detection of wireless charging -->
+                <action android:name="android.intent.action.BATTERY_CHANGED"/>
+                <!-- To start on boot -->
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".FlashlightService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <activity
+            android:name=".TransparentActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:taskAffinity=""
+            android:excludeFromRecents="true"
+            android:exported="false" /> <!-- Exported should be false unless explicitly needed by other apps -->
+
+        <!-- It's good practice to have a launcher icon, even for background apps,
+             for easier uninstallation and management from the app drawer.
+             If truly no UI is ever desired, this could be omitted, but might
+             make the app harder to find/manage for the user.
+             Let's add placeholder launcher icons. -->
+        <activity
+            android:name=".DummyLauncherActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
