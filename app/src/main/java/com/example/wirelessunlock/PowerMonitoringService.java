@@ -43,7 +43,7 @@ public class PowerMonitoringService extends Service {
         return new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("Wireless Unlock Active")
                 .setContentText("Monitoring wireless charging status.")
-                .setSmallIcon(R.mipmap.ic_launcher) // Replace with actual icon
+                .setSmallIcon(R.drawable.ic_service_notification) // Use dedicated notification icon
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .build();
