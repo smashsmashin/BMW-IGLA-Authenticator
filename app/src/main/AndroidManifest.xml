@@ -63,7 +63,12 @@
         <service
             android:name=".PowerMonitoringService"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Monitors power state to automate device features upon unlock." />
+        </service>
 
         <service
             android:name=".FlashlightService"
