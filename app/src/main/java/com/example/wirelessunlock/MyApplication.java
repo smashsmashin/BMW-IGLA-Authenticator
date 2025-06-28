@@ -6,7 +6,7 @@ import android.util.Log;
 
 public class MyApplication extends Application {
 
-    private static final String TAG = "MyApplication";
+    private static final String TAG = "PowerConnectionReceiver";
 
     @Override
     public void onCreate() {
