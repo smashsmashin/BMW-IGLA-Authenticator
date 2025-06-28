@@ -98,9 +98,7 @@ public class PowerMonitoringService extends Service {
                 } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
                     isWirelessChargingServiceScope = false;
                     Log.d(TAG, "Programmatic Receiver: Power disconnected. Wireless charging: " + isWirelessChargingServiceScope);
-                    Intent serviceIntent = new Intent(context, FlashlightService.class);
-                    serviceIntent.setAction(FlashlightService.ACTION_TURN_OFF_FLASHLIGHT);
-                    context.startService(serviceIntent);
+                    // Removed flashlight turn off call
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
                     // Re-check charging status on unlock
