@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import android.provider.Settings;
+import android.net.Uri;
 
 public class DummyLauncherActivity extends Activity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;

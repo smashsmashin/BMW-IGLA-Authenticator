@@ -11,14 +11,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-package com.example.wirelessunlock;
-
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
-import android.util.Log;
-
 // This receiver is now primarily for BOOT_COMPLETED (to start the service)
 // and other diagnostic intents if we keep them in the manifest.
 // Power-related intents will be handled by the receiver within PowerMonitoringService.
