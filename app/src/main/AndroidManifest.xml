@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <!-- <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> Removed -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" /> <!-- Required for foregroundServiceType="specialUse" on API 34+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/> <!-- For Android 13+ (API 33) -->
     <!-- Required for flashlight -->
     <uses-feature android:name="android.hardware.camera" />
