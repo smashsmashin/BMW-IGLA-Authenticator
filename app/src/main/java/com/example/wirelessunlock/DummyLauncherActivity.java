@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat;
 
 public class DummyLauncherActivity extends Activity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
+    private static final int SYSTEM_ALERT_WINDOW_PERMISSION_REQUEST_CODE = 102;
     private static final String TAG = "DummyLauncherActivity";
 
     @Override
@@ -30,19 +31,40 @@ public class DummyLauncherActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 (API 33)
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_REQUEST_CODE);
-                // The user will be prompted. The actual service start should ideally wait for this,
-                // or handle cases where permission is denied. For simplicity here, we start it regardless.
-                // A real app would have a more robust flow.
-                Toast.makeText(this, "Requesting notification permission for service.", Toast.LENGTH_LONG).show();
-            } else {
-                Toast.makeText(this, "WirelessUnlock monitoring service started.", Toast.LENGTH_LONG).show();
             }
-        } else {
-            Toast.makeText(this, "WirelessUnlock monitoring service started.", Toast.LENGTH_LONG).show();
         }
 
+        // Check and request SYSTEM_ALERT_WINDOW permission
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { // Available from API 23
+            if (!Settings.canDrawOverlays(this)) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getPackageName()));
+                // Before starting activity, show a toast or dialog explaining why this permission is needed.
+                Toast.makeText(this, "Please grant 'Draw over other apps' permission for full functionality.", Toast.LENGTH_LONG).show();
+                startActivityForResult(intent, SYSTEM_ALERT_WINDOW_PERMISSION_REQUEST_CODE);
+                // Note: We finish() immediately after. The user will grant permission and return to whatever screen they were on.
+                // The service will attempt to start activities later; hopefully, by then, the permission is granted.
+                // A more robust implementation might delay certain actions until this permission is confirmed via onActivityResult.
+            }
+        }
+
+        Toast.makeText(this, "WirelessUnlock monitoring service started/checked.", Toast.LENGTH_LONG).show();
         // Immediately finish the activity
         finish();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == SYSTEM_ALERT_WINDOW_PERMISSION_REQUEST_CODE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                if (Settings.canDrawOverlays(this)) {
+                    Toast.makeText(this, "Draw over other apps permission granted.", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Draw over other apps permission not granted.", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     @Override
@@ -50,9 +72,9 @@ public class DummyLauncherActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Notification permission granted. Service will show status.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Notification permission granted.", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Notification permission denied. Service status might not be visible.", Toast.LENGTH_LONG).show();
+                Toast.makeText(this, "Notification permission denied.", Toast.LENGTH_LONG).show();
             }
         }
     }
