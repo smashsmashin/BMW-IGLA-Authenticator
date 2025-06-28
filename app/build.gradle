@@ -43,6 +43,7 @@ dependencies {
     // No specific AndroidX libraries are strictly needed for this minimal example,
     // but typically you'd have some, e.g., appcompat.
     // For this specific feature set, platform APIs are sufficient.
+    implementation 'androidx.core:core-ktx:1.10.1' // For ActivityCompat and ContextCompat
 
     // Example of how you'd add dependencies:
     // implementation 'androidx.core:core-ktx:1.9.0' // If using Kotlin
