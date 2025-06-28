@@ -29,7 +29,9 @@
                 <!-- Using BATTERY_CHANGED for more robust initial state detection of wireless charging -->
                 <action android:name="android.intent.action.BATTERY_CHANGED"/>
                 <!-- To start on boot -->
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" >
+                    <category android:name="android.intent.category.DEFAULT" />
+                </action>
             </intent-filter>
         </receiver>
 
