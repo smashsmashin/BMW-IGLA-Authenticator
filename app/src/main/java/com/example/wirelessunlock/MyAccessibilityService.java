@@ -48,27 +48,16 @@ public class MyAccessibilityService extends AccessibilityService {
 
     private void findAndClickButton(AccessibilityNodeInfo nodeInfo) {
         if (nodeInfo == null) {
-            Log.d(TAG, "findAndClickButton: nodeInfo is null");
             return;
         }
 
-        Log.d(TAG, "findAndClickButton: " + nodeInfo.toString());
-
-        if (nodeInfo.isClickable()) {
-            Rect bounds = new Rect();
-            nodeInfo.getBoundsInScreen(bounds);
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
-
-            Log.d(TAG, "Clickable button found at: " + bounds);
-
-            if (bounds.contains(screenWidth / 2, screenHeight / 2)) {
-                Log.d(TAG, "Clickable button is in the center of the screen");
+        if ("android.widget.ToggleButton".equals(nodeInfo.getClassName())) {
+            if (nodeInfo.isClickable()) {
                 if (!nodeInfo.isChecked()) {
                     nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    Log.d(TAG, "Clicked a button at: " + bounds);
+                    Log.d(TAG, "Clicked ToggleButton");
                 } else {
-                    Log.d(TAG, "Button is already active, not clicking.");
+                    Log.d(TAG, "ToggleButton is already active, not clicking.");
                 }
                 return;
             }
