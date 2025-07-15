@@ -58,6 +58,10 @@ public class MyAccessibilityService extends AccessibilityService {
             int screenHeight = getResources().getDisplayMetrics().heightPixels;
 
             if (bounds.contains(screenWidth / 2, screenHeight / 2)) {
+                Log.d(TAG, "Button isSelected: " + nodeInfo.isSelected());
+                Log.d(TAG, "Button isChecked: " + nodeInfo.isChecked());
+                Log.d(TAG, "Button getText: " + nodeInfo.getText());
+                Log.d(TAG, "Button getContentDescription: " + nodeInfo.getContentDescription());
                 nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                 Log.d(TAG, "Clicked a button at: " + bounds);
                 return;
