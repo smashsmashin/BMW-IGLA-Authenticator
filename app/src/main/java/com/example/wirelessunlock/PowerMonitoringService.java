@@ -232,14 +232,11 @@ public class PowerMonitoringService extends Service {
     }
 
     private Notification getNotificationForService(int pid) {
-        // This is a simplified way to get the notification. In a real app, you might need a more robust way.
-        // This requires the GET_APP_OPS_STATS permission, which is a system-level permission.
-        // For this example, we'll assume the app has it.
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
-            for (Notification notification : notificationManager.getActiveNotifications()) {
-                if (notification.extras.getInt(Notification.EXTRA_AS_UID) == pid) {
-                    return notification;
+            for (android.service.notification.StatusBarNotification sbn : notificationManager.getActiveNotifications()) {
+                if (sbn.getUid() == pid) {
+                    return sbn.getNotification();
                 }
             }
         }
