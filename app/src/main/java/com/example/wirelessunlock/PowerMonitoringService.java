@@ -5,7 +5,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -24,6 +26,7 @@ public class PowerMonitoringService extends Service {
 
     private BroadcastReceiver powerBroadcastReceiver;
     private boolean isWirelessChargingServiceScope = false; // Service specific tracking
+    private boolean activityLaunched = false; // Add this flag
 
     @Override
     public void onCreate() {
@@ -85,35 +88,41 @@ public class PowerMonitoringService extends Service {
                     }
 
                     if (isWirelessChargingServiceScope) {
-                        if (keyguardManager != null && keyguardManager.isDeviceLocked()) {
-                             if (!previouslyWirelessCharging || Intent.ACTION_POWER_CONNECTED.equals(action)) {
-                                Log.d(TAG, "Programmatic Receiver: Device is locked and wireless charging connected. Waiting for unlock.");
+                        if (keyguardManager != null && !keyguardManager.isDeviceLocked()) {
+                            // Device is unlocked and wireless charging is active.
+                            if (!activityLaunched) {
+                                Log.d(TAG, "Programmatic Receiver: Device unlocked and wireless charging. Triggering action.");
+                                triggerFlashlightActivity(context);
+                                activityLaunched = true; // Mark as launched
+                            } else {
+                                Log.d(TAG, "Programmatic Receiver: Action already triggered for this charging session.");
                             }
-                            // Waiting for ACTION_USER_PRESENT (which is also registered by this receiver)
                         } else {
-                            Log.d(TAG, "Programmatic Receiver: Device is already unlocked and wireless charging connected. Triggering action.");
-                            triggerFlashlightActivity(context);
+                            Log.d(TAG, "Programmatic Receiver: Device is locked. Waiting for unlock.");
                         }
                     }
                 } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
                     isWirelessChargingServiceScope = false;
-                    Log.d(TAG, "Programmatic Receiver: Power disconnected. Wireless charging: " + isWirelessChargingServiceScope);
-                    // Removed flashlight turn off call
+                    activityLaunched = false; // Reset the flag
+                    Log.d(TAG, "Programmatic Receiver: Power disconnected. Resetting state.");
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
-                    // Re-check charging status on unlock
+                    // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-                    Intent batteryStatus = context.registerReceiver(null, filter); // Check current sticky broadcast
+                    Intent batteryStatus = context.registerReceiver(null, filter);
                     if (batteryStatus != null) {
                         int chargePlug = batteryStatus.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
                         isWirelessChargingServiceScope = (chargePlug == BatteryManager.BATTERY_PLUGGED_WIRELESS);
                     }
 
-                    if (isWirelessChargingServiceScope) {
-                        Log.d(TAG, "Programmatic Receiver: Device unlocked while wireless charging is active. Triggering action.");
+                    if (isWirelessChargingServiceScope && !activityLaunched) {
+                        Log.d(TAG, "Programmatic Receiver: Device unlocked while wireless charging. Triggering action.");
                         triggerFlashlightActivity(context);
+                        activityLaunched = true; // Mark as launched
+                    } else if (isWirelessChargingServiceScope) {
+                        Log.d(TAG, "Programmatic Receiver: Device unlocked, but action already triggered for this session.");
                     } else {
-                        Log.d(TAG, "Programmatic Receiver: Device unlocked but not on wireless charging. No action.");
+                        Log.d(TAG, "Programmatic Receiver: Device unlocked but not on wireless charge.");
                     }
                 }
             }
@@ -131,9 +140,18 @@ public class PowerMonitoringService extends Service {
     }
 
     private void triggerFlashlightActivity(Context context) {
-        Intent intent = new Intent(context, TransparentActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+        // Intent intent = new Intent();
+        // intent.setClassName(context, "com.dma.author.authorid.view.SplashActivity");
+        // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // context.startActivity(intent);
+    try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     @Override
