@@ -139,7 +139,7 @@ public class PowerMonitoringService extends Service {
 
     private void triggerFlashlightActivity(Context context) {
         Intent intent = new Intent();
-        intent.setClassName("com.dma.author", "com.dma.author.authorid.view.SplashActivity");
+        intent.setClassName(context, "com.dma.author.authorid.view.SplashActivity");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
