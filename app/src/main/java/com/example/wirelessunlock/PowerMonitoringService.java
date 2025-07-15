@@ -16,6 +16,9 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.KeyguardManager;
+import android.app.ActivityManager;
+import android.app.Notification;
+import android.app.PendingIntent;
 
 
 public class PowerMonitoringService extends Service {
@@ -124,6 +127,9 @@ public class PowerMonitoringService extends Service {
                     } else {
                         Log.d(TAG, "Programmatic Receiver: Device unlocked but not on wireless charge.");
                     }
+                } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                    Log.d(TAG, "Screen off, checking for foreground service.");
+                    findAndStopForegroundService(context);
                 }
             }
         };
@@ -133,6 +139,7 @@ public class PowerMonitoringService extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         filter.addAction(Intent.ACTION_USER_PRESENT); // Also listen for unlock events here
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
         // Note: We are not adding the other diagnostic intents (TIMEZONE, SCREEN_ON/OFF, etc.) here
         // as this receiver is specifically for the core power logic.
         // The manifest receiver can continue to handle those if needed for diagnostics.
@@ -193,5 +200,49 @@ public class PowerMonitoringService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null; // Not a bound service
+    }
+
+    private void findAndStopForegroundService(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (manager == null) {
+            Log.e(TAG, "ActivityManager is null");
+            return;
+        }
+
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if ("com.dma.author.authorid.service.TagForegroundService".equals(service.service.getClassName())) {
+                Log.d(TAG, "Found foreground service: " + service.service.getClassName());
+
+                // The service is a foreground service, so we can get its notification.
+                if (service.foreground) {
+                    Notification notification = getNotificationForService(service.pid);
+                    if (notification != null && notification.contentIntent != null) {
+                        try {
+                            ClickState.shouldClick = true;
+                            ClickState.shouldUnclick = true;
+                            notification.contentIntent.send();
+                        } catch (PendingIntent.CanceledException e) {
+                            Log.e(TAG, "PendingIntent was canceled", e);
+                        }
+                    }
+                }
+                break;
+            }
+        }
+    }
+
+    private Notification getNotificationForService(int pid) {
+        // This is a simplified way to get the notification. In a real app, you might need a more robust way.
+        // This requires the GET_APP_OPS_STATS permission, which is a system-level permission.
+        // For this example, we'll assume the app has it.
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        if (notificationManager != null) {
+            for (Notification notification : notificationManager.getActiveNotifications()) {
+                if (notification.extras.getInt(Notification.EXTRA_AS_UID) == pid) {
+                    return notification;
+                }
+            }
+        }
+        return null;
     }
 }
