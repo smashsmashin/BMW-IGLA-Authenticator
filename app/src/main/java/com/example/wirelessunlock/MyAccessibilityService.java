@@ -51,19 +51,14 @@ public class MyAccessibilityService extends AccessibilityService {
             return;
         }
 
-        if (nodeInfo.isClickable()) {
-            Rect bounds = new Rect();
-            nodeInfo.getBoundsInScreen(bounds);
-            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-            int screenHeight = getResources().getDisplayMetrics().heightPixels;
-
-            if (bounds.contains(screenWidth / 2, screenHeight / 2)) {
+        if ("android.widget.ToggleButton".equals(nodeInfo.getClassName())) {
+            if (nodeInfo.isClickable()) {
                 if (!nodeInfo.isChecked()) {
                     nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    Log.d(TAG, "Clicked a button at: " + bounds);
+                    Log.d(TAG, "Clicked ToggleButton");
                     performGlobalAction(GLOBAL_ACTION_BACK);
                 } else {
-                    Log.d(TAG, "Button is already active, not clicking.");
+                    Log.d(TAG, "ToggleButton is already active, not clicking.");
                 }
                 return;
             }
