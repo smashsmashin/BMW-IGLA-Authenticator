@@ -140,11 +140,12 @@ public class PowerMonitoringService extends Service {
     }
 
     private void triggerFlashlightActivity(Context context) {
-        // Intent intent = new Intent();
-        // intent.setClassName(context, "com.dma.author.authorid.view.SplashActivity");
-        // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        // context.startActivity(intent);
-    try {
+        if (!isAccessibilityServiceEnabled(context)) {
+            promptToEnableAccessibilityService(context);
+            return;
+        }
+
+        try {
             Intent intent = new Intent();
             intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -152,6 +153,21 @@ public class PowerMonitoringService extends Service {
         } catch (ActivityNotFoundException e) {
             Log.e(TAG, e.getMessage());
         }
+    }
+
+    private boolean isAccessibilityServiceEnabled(Context context) {
+        ComponentName expectedComponentName = new ComponentName(context, MyAccessibilityService.class);
+        String enabledServicesSetting = android.provider.Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        if (enabledServicesSetting == null) {
+            return false;
+        }
+        return enabledServicesSetting.contains(expectedComponentName.flattenToString());
+    }
+
+    private void promptToEnableAccessibilityService(Context context) {
+        Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
     }
 
     @Override
