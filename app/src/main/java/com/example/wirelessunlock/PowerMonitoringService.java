@@ -148,7 +148,7 @@ public class PowerMonitoringService extends Service {
         try {
             ClickState.shouldClick = true;
             Intent intent = new Intent();
-            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.TagActivity"));
+            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         } catch (ActivityNotFoundException e) {
