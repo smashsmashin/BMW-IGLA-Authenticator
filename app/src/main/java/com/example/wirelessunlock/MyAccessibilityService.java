@@ -16,9 +16,12 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
+        Log.d(TAG, "onAccessibilityEvent: " + event.toString());
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             String packageName = event.getPackageName().toString();
             String className = event.getClassName().toString();
+
+            Log.d(TAG, "Window state changed: " + packageName + "/" + className);
 
             if (TARGET_APP_PACKAGE.equals(packageName) && TARGET_ACTIVITY_NAME.equals(className)) {
                 Log.d(TAG, "SplashActivity opened, attempting to click button.");
