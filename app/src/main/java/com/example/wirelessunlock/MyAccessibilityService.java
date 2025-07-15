@@ -24,8 +24,13 @@ public class MyAccessibilityService extends AccessibilityService {
             Log.d(TAG, "Window state changed: " + packageName + "/" + className);
 
             if (TARGET_APP_PACKAGE.equals(packageName) && TARGET_ACTIVITY_NAME.equals(className)) {
-                Log.d(TAG, "SplashActivity opened, attempting to click button.");
-                clickButtonInCenter();
+                if (ClickState.shouldClick) {
+                    Log.d(TAG, "TagActivity opened by our app, attempting to click button.");
+                    clickButtonInCenter();
+                    ClickState.shouldClick = false;
+                } else {
+                    Log.d(TAG, "TagActivity opened, but not by our app. Ignoring.");
+                }
             }
         }
     }
