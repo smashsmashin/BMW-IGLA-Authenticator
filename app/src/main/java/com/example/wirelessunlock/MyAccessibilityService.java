@@ -12,7 +12,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
     private static final String TAG = "MyAccessibilityService";
     private static final String TARGET_APP_PACKAGE = "com.dma.author.authorid";
-    private static final String TARGET_ACTIVITY_NAME = "com.dma.author.authorid.view.SplashActivity";
+    private static final String TARGET_ACTIVITY_NAME = "com.dma.author.authorid.view.TagActivity";
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
