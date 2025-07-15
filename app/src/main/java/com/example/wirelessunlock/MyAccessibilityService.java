@@ -9,6 +9,7 @@ import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -32,8 +33,14 @@ public class MyAccessibilityService extends AccessibilityService {
 
             if (TARGET_APP_PACKAGE.equals(packageName) && TARGET_ACTIVITY_NAME.equals(className)) {
                 if (ClickState.shouldClick) {
-                    Log.d(TAG, "TagActivity opened by our app, attempting to click button.");
-                    clickButtonInCenter(true);
+                    if (ClickState.shouldUnclick) {
+                        Log.d(TAG, "TagActivity opened by our app, attempting to unclick button.");
+                        clickButtonInCenter(false);
+                        ClickState.shouldUnclick = false;
+                    } else {
+                        Log.d(TAG, "TagActivity opened by our app, attempting to click button.");
+                        clickButtonInCenter(true);
+                    }
                     ClickState.shouldClick = false;
                 } else {
                     Log.d(TAG, "TagActivity opened, but not by our app. Ignoring.");
@@ -121,7 +128,15 @@ public class MyAccessibilityService extends AccessibilityService {
             // Restart the service
             if (isServiceRunning(MyAccessibilityService.class)) {
                 Log.d(TAG, "Service is running, attempting to unclick button.");
-                clickButtonInCenter(false); // This will now handle both clicking and unclicking
+
+                Intent intent = new Intent();
+                intent.setClassName(TARGET_APP_PACKAGE, "com.dma.author.authorid.view.SplashActivity");
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                // Set a flag to indicate that the next click should be an unclick
+                ClickState.shouldClick = true;
+                ClickState.shouldUnclick = true;
             }
         };
     }
