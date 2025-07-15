@@ -61,6 +61,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 if (!nodeInfo.isChecked()) {
                     nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     Log.d(TAG, "Clicked a button at: " + bounds);
+                    performGlobalAction(GLOBAL_ACTION_BACK);
                 } else {
                     Log.d(TAG, "Button is already active, not clicking.");
                 }
