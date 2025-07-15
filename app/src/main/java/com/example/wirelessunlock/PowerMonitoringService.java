@@ -5,7 +5,9 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -138,10 +140,18 @@ public class PowerMonitoringService extends Service {
     }
 
     private void triggerFlashlightActivity(Context context) {
-        Intent intent = new Intent();
-        intent.setClassName(context, "com.dma.author.authorid.view.SplashActivity");
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
+        // Intent intent = new Intent();
+        // intent.setClassName(context, "com.dma.author.authorid.view.SplashActivity");
+        // intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        // context.startActivity(intent);
+    try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, e.getMessage());
+        }
     }
 
     @Override
