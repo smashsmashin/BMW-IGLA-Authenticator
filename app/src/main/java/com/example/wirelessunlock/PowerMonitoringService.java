@@ -235,8 +235,13 @@ public class PowerMonitoringService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         if (notificationManager != null) {
             for (android.service.notification.StatusBarNotification sbn : notificationManager.getActiveNotifications()) {
-                if (sbn.getUid() == pid) {
-                    return sbn.getNotification();
+                Notification notification = sbn.getNotification();
+                if (notification != null && notification.extras != null) {
+                    String title = notification.extras.getString(Notification.EXTRA_TITLE);
+                    String text = notification.extras.getString(Notification.EXTRA_TEXT);
+                    if ("Author ID".equals(title) && "Key FOB activated".equals(text)) {
+                        return notification;
+                    }
                 }
             }
         }
