@@ -204,6 +204,7 @@ public class PowerMonitoringService extends Service {
     }
 
     private void findAndStopForegroundService(Context context) {
+        Log.d(TAG, "Attempting to find and stop foreground service.");
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (manager == null) {
             Log.e(TAG, "ActivityManager is null");
@@ -216,8 +217,10 @@ public class PowerMonitoringService extends Service {
 
                 // The service is a foreground service, so we can get its notification.
                 if (service.foreground) {
+                    Log.d(TAG, "Service is in the foreground.");
                     Notification notification = getNotificationForService(service.pid);
                     if (notification != null && notification.contentIntent != null) {
+                        Log.d(TAG, "Notification and content intent found. Sending intent.");
                         try {
                             ClickState.shouldClick = true;
                             ClickState.shouldUnclick = true;
@@ -225,11 +228,14 @@ public class PowerMonitoringService extends Service {
                         } catch (PendingIntent.CanceledException e) {
                             Log.e(TAG, "PendingIntent was canceled", e);
                         }
+                    } else {
+                        Log.d(TAG, "Notification or content intent not found.");
                     }
                 }
                 break;
             }
         }
+        Log.d(TAG, "Finished checking for foreground service.");
     }
 
     private Notification getNotificationForService(int pid) {
