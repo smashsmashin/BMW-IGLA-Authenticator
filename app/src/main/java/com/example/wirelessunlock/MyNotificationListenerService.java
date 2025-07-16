@@ -9,6 +9,7 @@ public class MyNotificationListenerService extends NotificationListenerService {
 
     private static final String TAG = "MyNotificationListener";
     private static final String TARGET_APP_PACKAGE = "com.dma.author.authorid";
+    private static long lastProcessedTime = 0;
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
@@ -22,13 +23,19 @@ public class MyNotificationListenerService extends NotificationListenerService {
                 Log.d(TAG, "Notification title: " + title);
                 Log.d(TAG, "Notification text: " + text);
                 if ("Author ID".equals(title) && "Key FOB activated".equals(text)) {
-                    Log.d(TAG, "Found target notification. Sending intent.");
-                    try {
-                        ClickState.shouldClick = true;
-                        ClickState.shouldUnclick = true;
-                        notification.contentIntent.send();
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error sending pending intent", e);
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastProcessedTime > 1000) { // 1 second cooldown
+                        lastProcessedTime = currentTime;
+                        Log.d(TAG, "Found target notification. Sending intent.");
+                        try {
+                            ClickState.shouldClick = true;
+                            ClickState.shouldUnclick = true;
+                            notification.contentIntent.send();
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error sending pending intent", e);
+                        }
+                    } else {
+                        Log.d(TAG, "Notification already processed recently. Ignoring.");
                     }
                 }
             }
