@@ -84,30 +84,37 @@ public class MainService extends Service {
                 KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
                 isScreenUnlocked = keyguardManager != null && !keyguardManager.isDeviceLocked();
 
-                switch (action) {
-                    case Intent.ACTION_BATTERY_CHANGED:
-                    case Intent.ACTION_POWER_CONNECTED:
-                        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
-                        boolean wasWirelessCharging = isWirelessCharging;
-                        isWirelessCharging = (chargePlug == BatteryManager.BATTERY_PLUGGED_WIRELESS);
-                        if (isWirelessCharging && !wasWirelessCharging) {
-                            // Reset key fob activation state on new wireless charging session
-                            isKeyFobActivated = false;
+                if (Intent.ACTION_BATTERY_CHANGED.equals(action) || Intent.ACTION_POWER_CONNECTED.equals(action)) {
+                    int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+                    boolean previouslyWirelessCharging = isWirelessCharging;
+                    isWirelessCharging = (chargePlug == BatteryManager.BATTERY_PLUGGED_WIRELESS);
+
+                    if (isWirelessCharging != previouslyWirelessCharging) {
+                        Log.d(LOG_TAG, "Wireless charging state changed to: " + isWirelessCharging);
+                        if (!isWirelessCharging) {
+                            deactivateKeyFob();
                         }
+                    }
+
+                    if (isWirelessCharging) {
+                        if (isScreenUnlocked && !isKeyFobActivated) {
+                            activateKeyFob();
+                        }
+                    }
+                } else if (Intent.ACTION_POWER_DISCONNECTED.equals(action)) {
+                    Log.d(LOG_TAG, "Power disconnected.");
+                    isWirelessCharging = false;
+                    deactivateKeyFob();
+                } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
+                    Log.d(LOG_TAG, "Device unlocked by user.");
+                    isScreenUnlocked = true;
+                    if (isWirelessCharging && !isKeyFobActivated) {
                         activateKeyFob();
-                        break;
-                    case Intent.ACTION_POWER_DISCONNECTED:
-                        isWirelessCharging = false;
-                        deactivateKeyFob();
-                        break;
-                    case Intent.ACTION_USER_PRESENT:
-                        isScreenUnlocked = true;
-                        activateKeyFob();
-                        break;
-                    case Intent.ACTION_SCREEN_OFF:
-                        isScreenUnlocked = false;
-                        deactivateKeyFob();
-                        break;
+                    }
+                } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
+                    Log.d(LOG_TAG, "Screen off.");
+                    isScreenUnlocked = false;
+                    deactivateKeyFob();
                 }
             }
         };
