@@ -13,6 +13,7 @@ import android.content.Context;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
+import androidx.core.content.ContextCompat;
 
 public class MyNotificationListenerService extends NotificationListenerService {
 
@@ -37,11 +38,7 @@ public class MyNotificationListenerService extends NotificationListenerService {
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, new Notification());
         IntentFilter filter = new IntentFilter(ACTION_UNCHECK_TOGGLE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
-        } else {
-            registerReceiver(receiver, filter);
-        }
+        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
     }
 
     @Override
