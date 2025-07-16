@@ -1,12 +1,12 @@
-package com.example.wirelessunlock;
+package app.smashsmashin.authoridassistant;
 
 import android.app.Application;
 import android.content.res.Configuration;
 import android.util.Log;
 
-public class MyApplication extends Application {
+public class AuthorIDAssistantApp extends Application {
 
-    private static final String TAG = "MyApplication";
+    private static final String TAG = "AuthorIDAssistantApp";
 
     @Override
     public void onCreate() {

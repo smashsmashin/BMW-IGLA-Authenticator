@@ -1,0 +1,182 @@
+package app.smashsmashin.authoridassistant;
+
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.BatteryManager;
+import android.os.Build;
+import android.os.IBinder;
+import android.util.Log;
+import android.app.KeyguardManager;
+
+
+public class MainService extends Service {
+
+    private static final String TAG = "MainService";
+    private static final String CHANNEL_ID = "AuthorIDAssistantChannel";
+    private static final int NOTIFICATION_ID = 1;
+
+    private BroadcastReceiver powerBroadcastReceiver;
+    private boolean isWirelessCharging = false;
+    private boolean isScreenUnlocked = false;
+    private boolean isKeyFobActivated = false;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        Log.d(TAG, "onCreate: Service creating.");
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, createNotification());
+
+        registerPowerReceiver();
+        Log.d(TAG, "onCreate: Power receiver registered.");
+    }
+
+    private Notification createNotification() {
+        Intent notificationIntent = new Intent(this, LauncherActivity.class); // Open app on tap
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+
+        return new Notification.Builder(this, CHANNEL_ID)
+                .setContentTitle("Author ID Assistant")
+                .setContentText("Monitoring device status.")
+                .setSmallIcon(R.drawable.ic_service_notification) // Use dedicated notification icon
+                .setContentIntent(pendingIntent)
+                .setOngoing(true)
+                .build();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Author ID Assistant Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+                Log.d(TAG, "Notification channel created.");
+            } else {
+                Log.e(TAG, "NotificationManager is null, cannot create channel.");
+            }
+        }
+    }
+
+    private void registerPowerReceiver() {
+        powerBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                Log.d(TAG, "Received action: " + action);
+
+                KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+                isScreenUnlocked = keyguardManager != null && !keyguardManager.isDeviceLocked();
+
+                switch (action) {
+                    case Intent.ACTION_BATTERY_CHANGED:
+                    case Intent.ACTION_POWER_CONNECTED:
+                        int chargePlug = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
+                        boolean wasWirelessCharging = isWirelessCharging;
+                        isWirelessCharging = (chargePlug == BatteryManager.BATTERY_PLUGGED_WIRELESS);
+                        if (isWirelessCharging && !wasWirelessCharging) {
+                            // Reset key fob activation state on new wireless charging session
+                            isKeyFobActivated = false;
+                        }
+                        activateKeyFob();
+                        break;
+                    case Intent.ACTION_POWER_DISCONNECTED:
+                        isWirelessCharging = false;
+                        deactivateKeyFob();
+                        break;
+                    case Intent.ACTION_USER_PRESENT:
+                        isScreenUnlocked = true;
+                        activateKeyFob();
+                        break;
+                    case Intent.ACTION_SCREEN_OFF:
+                        isScreenUnlocked = false;
+                        deactivateKeyFob();
+                        break;
+                }
+            }
+        };
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_POWER_CONNECTED);
+        filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
+        filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(powerBroadcastReceiver, filter);
+    }
+
+    private Handler deactivationHandler = new Handler(Looper.getMainLooper());
+    private Runnable deactivationRunnable = () -> deactivateKeyFob();
+
+    private void activateKeyFob() {
+        Log.d(TAG, "Attempting to activate Key FOB.");
+        if (!isWirelessCharging || !isScreenUnlocked || isKeyFobActivated) {
+            return;
+        }
+        isKeyFobActivated = true;
+        AppState.isKeyFobActionPending = true;
+        AppState.shouldActivate = true;
+        try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+            // Schedule deactivation after 1 minute
+            deactivationHandler.postDelayed(deactivationRunnable, 60000);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Author ID app not found.");
+        }
+    }
+
+    private void deactivateKeyFob() {
+        Log.d(TAG, "Attempting to deactivate Key FOB.");
+        deactivationHandler.removeCallbacks(deactivationRunnable); // Remove any pending deactivation
+        isKeyFobActivated = false;
+        AppState.isKeyFobActionPending = true;
+        AppState.shouldActivate = false;
+        try {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } catch (ActivityNotFoundException e) {
+            Log.e(TAG, "Author ID app not found.");
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "onStartCommand: Service started.");
+        // If killed, service will restart.
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy: Service destroying.");
+        if (powerBroadcastReceiver != null) {
+            unregisterReceiver(powerBroadcastReceiver);
+            Log.d(TAG, "onDestroy: Power receiver unregistered.");
+        }
+        // Consider stopping foreground and removing notification if appropriate
+        // stopForeground(true); // For true, removes notification. For false, detaches but notification might remain.
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null; // Not a bound service
+    }
+}
