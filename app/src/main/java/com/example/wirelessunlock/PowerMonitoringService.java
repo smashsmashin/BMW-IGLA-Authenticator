@@ -212,6 +212,7 @@ public class PowerMonitoringService extends Service {
         }
 
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            Log.d(TAG, "Found service: " + service.service.getClassName());
             if ("com.dma.author.authorid.service.TagForegroundService".equals(service.service.getClassName())) {
                 Log.d(TAG, "Found foreground service: " + service.service.getClassName());
 
