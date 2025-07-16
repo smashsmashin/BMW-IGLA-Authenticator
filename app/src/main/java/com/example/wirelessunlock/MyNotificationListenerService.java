@@ -37,7 +37,11 @@ public class MyNotificationListenerService extends NotificationListenerService {
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, new Notification());
         IntentFilter filter = new IntentFilter(ACTION_UNCHECK_TOGGLE);
-        registerReceiver(receiver, filter);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(receiver, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            registerReceiver(receiver, filter);
+        }
     }
 
     @Override
