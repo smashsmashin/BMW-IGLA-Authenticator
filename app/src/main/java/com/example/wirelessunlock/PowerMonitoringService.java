@@ -16,9 +16,9 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.KeyguardManager;
-
-
-public class PowerMonitoringService extends Service {
+import android.provider.Settings;
+import android.content.ComponentName;
+import android.text.TextUtils;
 
     private static final String TAG = "PowerMonitoringService";
     private static final String CHANNEL_ID = "PowerMonitoringChannel";
@@ -140,6 +140,10 @@ public class PowerMonitoringService extends Service {
     }
 
     private void triggerFlashlightActivity(Context context) {
+        if (!isNotificationServiceEnabled()) {
+            promptToEnableNotificationService(context);
+            return;
+        }
         if (!isAccessibilityServiceEnabled(context)) {
             promptToEnableAccessibilityService(context);
             return;
@@ -167,6 +171,30 @@ public class PowerMonitoringService extends Service {
 
     private void promptToEnableAccessibilityService(Context context) {
         Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(intent);
+    }
+
+    private boolean isNotificationServiceEnabled() {
+        String pkgName = getPackageName();
+        final String flat = Settings.Secure.getString(getContentResolver(),
+                "enabled_notification_listeners");
+        if (!TextUtils.isEmpty(flat)) {
+            final String[] names = flat.split(":");
+            for (int i = 0; i < names.length; i++) {
+                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
+                if (cn != null) {
+                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private void promptToEnableNotificationService(Context context) {
+        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
