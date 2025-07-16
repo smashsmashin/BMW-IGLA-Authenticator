@@ -109,6 +109,7 @@ public class PowerMonitoringService extends Service {
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
                     Intent uncheckIntent = new Intent(MyNotificationListenerService.ACTION_UNCHECK_TOGGLE);
+                    uncheckIntent.setPackage(getPackageName());
                     sendBroadcast(uncheckIntent);
                     // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
