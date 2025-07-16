@@ -16,9 +16,6 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.KeyguardManager;
-import android.app.ActivityManager;
-import android.app.Notification;
-import android.app.PendingIntent;
 
 
 public class PowerMonitoringService extends Service {
@@ -110,7 +107,6 @@ public class PowerMonitoringService extends Service {
                     Log.d(TAG, "Programmatic Receiver: Power disconnected. Resetting state.");
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
-                    findAndStopForegroundService(context);
                     // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = context.registerReceiver(null, filter);
@@ -128,9 +124,6 @@ public class PowerMonitoringService extends Service {
                     } else {
                         Log.d(TAG, "Programmatic Receiver: Device unlocked but not on wireless charge.");
                     }
-                } else if (Intent.ACTION_SCREEN_OFF.equals(action)) {
-                    Log.d(TAG, "Screen off, checking for foreground service.");
-                    findAndStopForegroundService(context);
                 }
             }
         };
@@ -140,7 +133,6 @@ public class PowerMonitoringService extends Service {
         filter.addAction(Intent.ACTION_POWER_DISCONNECTED);
         filter.addAction(Intent.ACTION_BATTERY_CHANGED);
         filter.addAction(Intent.ACTION_USER_PRESENT); // Also listen for unlock events here
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
         // Note: We are not adding the other diagnostic intents (TIMEZONE, SCREEN_ON/OFF, etc.) here
         // as this receiver is specifically for the core power logic.
         // The manifest receiver can continue to handle those if needed for diagnostics.
@@ -201,58 +193,5 @@ public class PowerMonitoringService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return null; // Not a bound service
-    }
-
-    private void findAndStopForegroundService(Context context) {
-        Log.d(TAG, "Attempting to find and stop foreground service.");
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        if (manager == null) {
-            Log.e(TAG, "ActivityManager is null");
-            return;
-        }
-
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            Log.d(TAG, "Found service: " + service.service.getClassName());
-            if ("com.dma.author.authorid.service.TagForegroundService".equals(service.service.getClassName())) {
-                Log.d(TAG, "Found foreground service: " + service.service.getClassName());
-
-                // The service is a foreground service, so we can get its notification.
-                if (service.foreground) {
-                    Log.d(TAG, "Service is in the foreground.");
-                    Notification notification = getNotificationForService(service.pid);
-                    if (notification != null && notification.contentIntent != null) {
-                        Log.d(TAG, "Notification and content intent found. Sending intent.");
-                        try {
-                            ClickState.shouldClick = true;
-                            ClickState.shouldUnclick = true;
-                            notification.contentIntent.send();
-                        } catch (PendingIntent.CanceledException e) {
-                            Log.e(TAG, "PendingIntent was canceled", e);
-                        }
-                    } else {
-                        Log.d(TAG, "Notification or content intent not found.");
-                    }
-                }
-                break;
-            }
-        }
-        Log.d(TAG, "Finished checking for foreground service.");
-    }
-
-    private Notification getNotificationForService(int pid) {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        if (notificationManager != null) {
-            for (android.service.notification.StatusBarNotification sbn : notificationManager.getActiveNotifications()) {
-                Notification notification = sbn.getNotification();
-                if (notification != null && notification.extras != null) {
-                    String title = notification.extras.getString(Notification.EXTRA_TITLE);
-                    String text = notification.extras.getString(Notification.EXTRA_TEXT);
-                    if ("Author ID".equals(title) && "Key FOB activated".equals(text)) {
-                        return notification;
-                    }
-                }
-            }
-        }
-        return null;
     }
 }
