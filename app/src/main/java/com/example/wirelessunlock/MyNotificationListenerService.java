@@ -1,51 +1,17 @@
 package com.example.wirelessunlock;
 
-import android.app.Notification;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.util.Log;
 import android.os.Binder;
 import android.os.IBinder;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.os.Build;
-import androidx.core.content.ContextCompat;
+import android.app.Notification;
 
 public class MyNotificationListenerService extends NotificationListenerService {
 
     private static final String TAG = "MyNotificationListener";
     private static final String TARGET_APP_PACKAGE = "com.dma.author.authorid";
-    public static final String ACTION_UNCHECK_TOGGLE = "com.example.wirelessunlock.UNCHECK_TOGGLE";
-    private static final String CHANNEL_ID = "NotificationListenerChannel";
-    private static final int NOTIFICATION_ID = 2;
-
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (ACTION_UNCHECK_TOGGLE.equals(intent.getAction())) {
-                uncheckToggleButton();
-            }
-        }
-    };
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        createNotificationChannel();
-        startForeground(NOTIFICATION_ID, new Notification());
-        IntentFilter filter = new IntentFilter(ACTION_UNCHECK_TOGGLE);
-        ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(receiver);
-    }
 
     public void uncheckToggleButton() {
         Log.d(TAG, "uncheckToggleButton called.");
@@ -75,22 +41,14 @@ public class MyNotificationListenerService extends NotificationListenerService {
         Log.d(TAG, "Finished uncheckToggleButton.");
     }
 
-    private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel serviceChannel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "Notification Listener Service Channel",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(serviceChannel);
-            }
+    public class LocalBinder extends Binder {
+        MyNotificationListenerService getService() {
+            return MyNotificationListenerService.this;
         }
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return null;
+        return new LocalBinder();
     }
 }

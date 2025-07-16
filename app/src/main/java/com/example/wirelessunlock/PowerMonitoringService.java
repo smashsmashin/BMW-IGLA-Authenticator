@@ -16,11 +16,9 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.KeyguardManager;
-import android.provider.Settings;
 import android.content.ComponentName;
-import android.text.TextUtils;
+import android.content.ServiceConnection;
 
-public class PowerMonitoringService extends Service {
     private static final String TAG = "PowerMonitoringService";
     private static final String CHANNEL_ID = "PowerMonitoringChannel";
     private static final int NOTIFICATION_ID = 1;
@@ -28,6 +26,22 @@ public class PowerMonitoringService extends Service {
     private BroadcastReceiver powerBroadcastReceiver;
     private boolean isWirelessChargingServiceScope = false; // Service specific tracking
     private boolean activityLaunched = false; // Add this flag
+    private MyNotificationListenerService notificationListenerService;
+    private boolean isBound = false;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            MyNotificationListenerService.LocalBinder binder = (MyNotificationListenerService.LocalBinder) service;
+            notificationListenerService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isBound = false;
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -35,6 +49,9 @@ public class PowerMonitoringService extends Service {
         Log.d(TAG, "onCreate: Service creating.");
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, createNotification());
+
+        Intent intent = new Intent(this, MyNotificationListenerService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         registerPowerReceiver();
         Log.d(TAG, "onCreate: Power receiver registered.");
@@ -108,9 +125,9 @@ public class PowerMonitoringService extends Service {
                     Log.d(TAG, "Programmatic Receiver: Power disconnected. Resetting state.");
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
-                    Intent uncheckIntent = new Intent(MyNotificationListenerService.ACTION_UNCHECK_TOGGLE);
-                    uncheckIntent.setPackage(getPackageName());
-                    sendBroadcast(uncheckIntent);
+                    if (isBound) {
+                        notificationListenerService.uncheckToggleButton();
+                    }
                     // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = context.registerReceiver(null, filter);
@@ -144,10 +161,6 @@ public class PowerMonitoringService extends Service {
     }
 
     private void triggerFlashlightActivity(Context context) {
-        if (!isNotificationServiceEnabled()) {
-            promptToEnableNotificationService(context);
-            return;
-        }
         if (!isAccessibilityServiceEnabled(context)) {
             promptToEnableAccessibilityService(context);
             return;
@@ -175,30 +188,6 @@ public class PowerMonitoringService extends Service {
 
     private void promptToEnableAccessibilityService(Context context) {
         Intent intent = new Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        context.startActivity(intent);
-    }
-
-    private boolean isNotificationServiceEnabled() {
-        String pkgName = getPackageName();
-        final String flat = Settings.Secure.getString(getContentResolver(),
-                "enabled_notification_listeners");
-        if (!TextUtils.isEmpty(flat)) {
-            final String[] names = flat.split(":");
-            for (int i = 0; i < names.length; i++) {
-                final ComponentName cn = ComponentName.unflattenFromString(names[i]);
-                if (cn != null) {
-                    if (TextUtils.equals(pkgName, cn.getPackageName())) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    private void promptToEnableNotificationService(Context context) {
-        Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(intent);
     }
