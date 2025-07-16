@@ -16,6 +16,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 import android.app.KeyguardManager;
+import android.os.Handler;
+import android.os.Looper;
 
 
 public class MainService extends Service {

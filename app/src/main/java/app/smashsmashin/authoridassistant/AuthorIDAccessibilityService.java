@@ -1,6 +1,7 @@
 package app.smashsmashin.authoridassistant;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.accessibilityservice.GestureDescription;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -12,6 +13,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import java.util.List;
 
 public class AuthorIDAccessibilityService extends AccessibilityService {
     private static final String TAG = "AuthorIDAccessibilityService";
