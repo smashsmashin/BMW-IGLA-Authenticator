@@ -7,15 +7,43 @@ import android.util.Log;
 import android.os.Binder;
 import android.os.IBinder;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.os.Build;
 
 public class MyNotificationListenerService extends NotificationListenerService {
 
     private static final String TAG = "MyNotificationListener";
     private static final String TARGET_APP_PACKAGE = "com.dma.author.authorid";
+    public static final String ACTION_UNCHECK_TOGGLE = "com.example.wirelessunlock.UNCHECK_TOGGLE";
+    private static final String CHANNEL_ID = "NotificationListenerChannel";
+    private static final int NOTIFICATION_ID = 2;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (ACTION_UNCHECK_TOGGLE.equals(intent.getAction())) {
+                uncheckToggleButton();
+            }
+        }
+    };
 
     @Override
-    public void onNotificationPosted(StatusBarNotification sbn) {
-        // We will no longer use this method.
+    public void onCreate() {
+        super.onCreate();
+        createNotificationChannel();
+        startForeground(NOTIFICATION_ID, new Notification());
+        IntentFilter filter = new IntentFilter(ACTION_UNCHECK_TOGGLE);
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(receiver);
     }
 
     public void uncheckToggleButton() {
@@ -46,14 +74,22 @@ public class MyNotificationListenerService extends NotificationListenerService {
         Log.d(TAG, "Finished uncheckToggleButton.");
     }
 
-    public class LocalBinder extends Binder {
-        MyNotificationListenerService getService() {
-            return MyNotificationListenerService.this;
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Notification Listener Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(serviceChannel);
+            }
         }
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        return new LocalBinder();
+        return null;
     }
 }
