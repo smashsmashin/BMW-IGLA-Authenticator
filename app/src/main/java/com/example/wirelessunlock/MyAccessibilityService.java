@@ -74,13 +74,13 @@ public class MyAccessibilityService extends AccessibilityService {
                 if (!nodeInfo.isChecked()) {
                     nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
                     Log.d(TAG, "Clicked ToggleButton");
-                    // Start a 1-minute timer
-                    timerHandler.postDelayed(timerRunnable, 60000);
-                    Log.d(TAG, "Started 1-minute timer.");
-                    performGlobalAction(GLOBAL_ACTION_BACK);
                 } else {
                     Log.d(TAG, "ToggleButton is already active, not clicking.");
                 }
+                // Start a 1-minute timer
+                timerHandler.postDelayed(timerRunnable, 45000);
+                Log.d(TAG, "Started 1-minute timer.");
+                performGlobalAction(GLOBAL_ACTION_BACK);
                 return;
             }
         }
