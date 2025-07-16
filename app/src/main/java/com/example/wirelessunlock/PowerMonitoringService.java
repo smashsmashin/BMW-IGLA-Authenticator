@@ -19,6 +19,8 @@ import android.app.KeyguardManager;
 import android.provider.Settings;
 import android.content.ComponentName;
 import android.text.TextUtils;
+import android.content.ServiceConnection;
+import android.os.IBinder;
 
 public class PowerMonitoringService extends Service {
     private static final String TAG = "PowerMonitoringService";
@@ -28,6 +30,22 @@ public class PowerMonitoringService extends Service {
     private BroadcastReceiver powerBroadcastReceiver;
     private boolean isWirelessChargingServiceScope = false; // Service specific tracking
     private boolean activityLaunched = false; // Add this flag
+    private MyNotificationListenerService notificationListenerService;
+    private boolean isBound = false;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            MyNotificationListenerService.LocalBinder binder = (MyNotificationListenerService.LocalBinder) service;
+            notificationListenerService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isBound = false;
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -35,6 +53,9 @@ public class PowerMonitoringService extends Service {
         Log.d(TAG, "onCreate: Service creating.");
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, createNotification());
+
+        Intent intent = new Intent(this, MyNotificationListenerService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         registerPowerReceiver();
         Log.d(TAG, "onCreate: Power receiver registered.");
@@ -108,6 +129,9 @@ public class PowerMonitoringService extends Service {
                     Log.d(TAG, "Programmatic Receiver: Power disconnected. Resetting state.");
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
+                    if (isBound) {
+                        notificationListenerService.uncheckToggleButton();
+                    }
                     // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = context.registerReceiver(null, filter);
