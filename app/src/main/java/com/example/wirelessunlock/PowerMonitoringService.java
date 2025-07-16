@@ -20,6 +20,7 @@ import android.provider.Settings;
 import android.content.ComponentName;
 import android.text.TextUtils;
 
+public class PowerMonitoringService extends Service {
     private static final String TAG = "PowerMonitoringService";
     private static final String CHANNEL_ID = "PowerMonitoringChannel";
     private static final int NOTIFICATION_ID = 1;
