@@ -12,12 +12,17 @@ public class MyNotificationListenerService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
+        Log.d(TAG, "onNotificationPosted: " + sbn.getPackageName());
         if (TARGET_APP_PACKAGE.equals(sbn.getPackageName())) {
+            Log.d(TAG, "Found notification from target package.");
             Notification notification = sbn.getNotification();
             if (notification != null && notification.contentIntent != null) {
                 String title = notification.extras.getString(Notification.EXTRA_TITLE);
                 String text = notification.extras.getString(Notification.EXTRA_TEXT);
+                Log.d(TAG, "Notification title: " + title);
+                Log.d(TAG, "Notification text: " + text);
                 if ("Author ID".equals(title) && "Key FOB activated".equals(text)) {
+                    Log.d(TAG, "Found target notification. Sending intent.");
                     try {
                         ClickState.shouldClick = true;
                         ClickState.shouldUnclick = true;
