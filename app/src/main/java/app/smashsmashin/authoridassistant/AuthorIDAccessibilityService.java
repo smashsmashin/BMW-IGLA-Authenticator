@@ -51,23 +51,29 @@ public class AuthorIDAccessibilityService extends AccessibilityService {
         }
     }
 
-    private void findAndClickToggleButton(AccessibilityNodeInfo rootNode) {
-        List<AccessibilityNodeInfo> nodes = rootNode.findAccessibilityNodeInfosByViewId(TOGGLE_BUTTON_ID);
-        if (nodes != null && !nodes.isEmpty()) {
-            AccessibilityNodeInfo toggleButton = nodes.get(0);
-            Log.d(LOG_TAG, "ToggleButton found. Is checked: " + toggleButton.isChecked());
+    private void findAndClickToggleButton(AccessibilityNodeInfo nodeInfo) {
+        if (nodeInfo == null) {
+            return;
+        }
 
-            if (AppState.shouldActivate && !toggleButton.isChecked()) {
-                Log.d(LOG_TAG, "ToggleButton is not checked. Performing click to activate.");
-                toggleButton.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            } else if (!AppState.shouldActivate && toggleButton.isChecked()) {
-                Log.d(LOG_TAG, "ToggleButton is checked. Performing click to deactivate.");
-                toggleButton.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-            } else {
-                Log.d(LOG_TAG, "ToggleButton is already in the desired state. No action needed.");
+        if ("android.widget.ToggleButton".equals(nodeInfo.getClassName())) {
+            if (nodeInfo.isClickable()) {
+                if (AppState.shouldActivate && !nodeInfo.isChecked()) {
+                    nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    Log.d(LOG_TAG, "Clicked ToggleButton");
+                } else if (!AppState.shouldActivate && nodeInfo.isChecked()) {
+                    nodeInfo.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                    Log.d(LOG_TAG, "Unclicked ToggleButton");
+                } else {
+                    Log.d(LOG_TAG, "ToggleButton is already in the desired state.");
+                }
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                return;
             }
-        } else {
-            Log.w(LOG_TAG, "ToggleButton with ID " + TOGGLE_BUTTON_ID + " not found.");
+        }
+
+        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
+            findAndClickToggleButton(nodeInfo.getChild(i));
         }
     }
 
