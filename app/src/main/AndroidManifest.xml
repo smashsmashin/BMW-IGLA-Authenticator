@@ -12,7 +12,7 @@
 
 
     <application
-        android:name=".MyApplication"
+        android:name=".AuthorIDAssistantApp"
         android:allowBackup="true"
         android:label="Author ID Assistant"
         android:supportsRtl="true"
