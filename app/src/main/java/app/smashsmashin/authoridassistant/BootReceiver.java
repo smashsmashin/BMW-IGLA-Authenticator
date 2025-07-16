@@ -16,15 +16,15 @@ import android.util.Log;
 // Power-related intents will be handled by the receiver within PowerMonitoringService.
 public class BootReceiver extends BroadcastReceiver {
 
-    private static final String TAG = "BootReceiver";
+    private static final String LOG_TAG = "AuthorIDAssistant";
 
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        Log.d(TAG, "Received action: " + action);
+        Log.d(LOG_TAG, "Received action: " + action);
 
         if (Intent.ACTION_BOOT_COMPLETED.equals(action)) {
-            Log.d(TAG, "BOOT_COMPLETED received. Starting MainService.");
+            Log.d(LOG_TAG, "BOOT_COMPLETED received. Starting MainService.");
             Intent serviceIntent = new Intent(context, MainService.class);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(serviceIntent);

@@ -34,13 +34,15 @@ public class MainService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate: Service creating.");
+        Log.d(LOG_TAG, "onCreate: Service creating.");
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, createNotification());
 
         registerPowerReceiver();
-        Log.d(TAG, "onCreate: Power receiver registered.");
+        Log.d(LOG_TAG, "onCreate: Power receiver registered.");
     }
+
+    private static final String LOG_TAG = "AuthorIDAssistant";
 
     private Notification createNotification() {
         Intent notificationIntent = new Intent(this, LauncherActivity.class); // Open app on tap
@@ -49,7 +51,7 @@ public class MainService extends Service {
         return new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("Author ID Assistant")
                 .setContentText("Monitoring device status.")
-                .setSmallIcon(R.drawable.ic_service_notification) // Use dedicated notification icon
+                .setSmallIcon(R.drawable.ic_notification) // Use dedicated notification icon
                 .setContentIntent(pendingIntent)
                 .setOngoing(true)
                 .build();
@@ -77,7 +79,7 @@ public class MainService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 String action = intent.getAction();
-                Log.d(TAG, "Received action: " + action);
+                Log.d(LOG_TAG, "Received action: " + action);
 
                 KeyguardManager keyguardManager = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
                 isScreenUnlocked = keyguardManager != null && !keyguardManager.isDeviceLocked();
@@ -123,7 +125,7 @@ public class MainService extends Service {
     private Runnable deactivationRunnable = () -> deactivateKeyFob();
 
     private void activateKeyFob() {
-        Log.d(TAG, "Attempting to activate Key FOB.");
+        Log.d(LOG_TAG, "Attempting to activate Key FOB.");
         if (!isWirelessCharging || !isScreenUnlocked || isKeyFobActivated) {
             return;
         }
@@ -143,7 +145,7 @@ public class MainService extends Service {
     }
 
     private void deactivateKeyFob() {
-        Log.d(TAG, "Attempting to deactivate Key FOB.");
+        Log.d(LOG_TAG, "Attempting to deactivate Key FOB.");
         deactivationHandler.removeCallbacks(deactivationRunnable); // Remove any pending deactivation
         isKeyFobActivated = false;
         AppState.isKeyFobActionPending = true;
@@ -160,7 +162,7 @@ public class MainService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(TAG, "onStartCommand: Service started.");
+        Log.d(LOG_TAG, "onStartCommand: Service started.");
         // If killed, service will restart.
         return START_STICKY;
     }
@@ -168,10 +170,10 @@ public class MainService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy: Service destroying.");
+        Log.d(LOG_TAG, "onDestroy: Service destroying.");
         if (powerBroadcastReceiver != null) {
             unregisterReceiver(powerBroadcastReceiver);
-            Log.d(TAG, "onDestroy: Power receiver unregistered.");
+            Log.d(LOG_TAG, "onDestroy: Power receiver unregistered.");
         }
         // Consider stopping foreground and removing notification if appropriate
         // stopForeground(true); // For true, removes notification. For false, detaches but notification might remain.

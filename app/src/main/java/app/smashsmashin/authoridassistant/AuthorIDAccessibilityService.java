@@ -16,7 +16,7 @@ import android.os.Looper;
 import java.util.List;
 
 public class AuthorIDAccessibilityService extends AccessibilityService {
-    private static final String TAG = "AuthorIDAccessibilityService";
+    private static final String LOG_TAG = "AuthorIDAssistant";
     private static final String TARGET_APP_PACKAGE = "com.dma.author.authorid";
     private static final String TAG_ACTIVITY_NAME = "com.dma.author.authorid.view.TagActivity";
     private static final String TOGGLE_BUTTON_ID = "com.dma.author.authorid:id/acb_tag_on_off";
@@ -33,19 +33,19 @@ public class AuthorIDAccessibilityService extends AccessibilityService {
 
             AccessibilityNodeInfo rootNode = getRootInActiveWindow();
             if (rootNode == null) {
-                Log.d(TAG, "Root node is null.");
+                Log.d(LOG_TAG, "Root node is null.");
                 return;
             }
 
             String currentActivityName = event.getClassName().toString();
-            Log.d(TAG, "Current activity: " + currentActivityName);
+            Log.d(LOG_TAG, "Current activity: " + currentActivityName);
 
             if (TAG_ACTIVITY_NAME.equals(currentActivityName)) {
-                Log.d(TAG, "TagActivity reached. Attempting to find and click the toggle button.");
+                Log.d(LOG_TAG, "TagActivity reached. Attempting to find and click the toggle button.");
                 findAndClickToggleButton(rootNode);
                 AppState.isKeyFobActionPending = false; // Reset the state
             } else {
-                Log.d(TAG, "Not in TagActivity. Current activity: " + currentActivityName + ". Waiting...");
+                Log.d(LOG_TAG, "Not in TagActivity. Current activity: " + currentActivityName + ". Waiting...");
             }
             rootNode.recycle();
         }
@@ -55,19 +55,19 @@ public class AuthorIDAccessibilityService extends AccessibilityService {
         List<AccessibilityNodeInfo> nodes = rootNode.findAccessibilityNodeInfosByViewId(TOGGLE_BUTTON_ID);
         if (nodes != null && !nodes.isEmpty()) {
             AccessibilityNodeInfo toggleButton = nodes.get(0);
-            Log.d(TAG, "ToggleButton found. Is checked: " + toggleButton.isChecked());
+            Log.d(LOG_TAG, "ToggleButton found. Is checked: " + toggleButton.isChecked());
 
             if (AppState.shouldActivate && !toggleButton.isChecked()) {
-                Log.d(TAG, "ToggleButton is not checked. Performing click to activate.");
+                Log.d(LOG_TAG, "ToggleButton is not checked. Performing click to activate.");
                 toggleButton.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             } else if (!AppState.shouldActivate && toggleButton.isChecked()) {
-                Log.d(TAG, "ToggleButton is checked. Performing click to deactivate.");
+                Log.d(LOG_TAG, "ToggleButton is checked. Performing click to deactivate.");
                 toggleButton.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             } else {
-                Log.d(TAG, "ToggleButton is already in the desired state. No action needed.");
+                Log.d(LOG_TAG, "ToggleButton is already in the desired state. No action needed.");
             }
         } else {
-            Log.w(TAG, "ToggleButton with ID " + TOGGLE_BUTTON_ID + " not found.");
+            Log.w(LOG_TAG, "ToggleButton with ID " + TOGGLE_BUTTON_ID + " not found.");
         }
     }
 
@@ -80,11 +80,11 @@ public class AuthorIDAccessibilityService extends AccessibilityService {
         info.packageNames = new String[]{TARGET_APP_PACKAGE};
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         setServiceInfo(info);
-        Log.d(TAG, "Accessibility service connected and configured.");
+        Log.d(LOG_TAG, "Accessibility service connected and configured.");
     }
 
     @Override
     public void onInterrupt() {
-        Log.d(TAG, "Accessibility Service interrupted.");
+        Log.d(LOG_TAG, "Accessibility Service interrupted.");
     }
 }

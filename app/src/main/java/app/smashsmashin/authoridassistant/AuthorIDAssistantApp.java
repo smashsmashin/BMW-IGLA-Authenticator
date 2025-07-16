@@ -6,12 +6,12 @@ import android.util.Log;
 
 public class AuthorIDAssistantApp extends Application {
 
-    private static final String TAG = "AuthorIDAssistantApp";
+    private static final String LOG_TAG = "AuthorIDAssistant";
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "Application onCreate - Process created.");
+        Log.d(LOG_TAG, "Application onCreate - Process created.");
         // This is a good place for one-time initializations if needed.
     }
 
