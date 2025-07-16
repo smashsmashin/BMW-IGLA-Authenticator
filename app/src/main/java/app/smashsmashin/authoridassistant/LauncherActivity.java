@@ -21,6 +21,11 @@ public class LauncherActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         // Start the MainService
         Intent serviceIntent = new Intent(this, MainService.class);
@@ -48,6 +53,7 @@ public class LauncherActivity extends Activity {
         }
 
         Toast.makeText(this, "Author ID Assistant service started.", Toast.LENGTH_LONG).show();
+        finish();
     }
 
     @Override
