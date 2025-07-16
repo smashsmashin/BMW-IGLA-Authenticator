@@ -108,8 +108,8 @@ public class PowerMonitoringService extends Service {
                     Log.d(TAG, "Programmatic Receiver: Power disconnected. Resetting state.");
                 } else if (Intent.ACTION_USER_PRESENT.equals(action)) {
                     Log.d(TAG, "Programmatic Receiver: Device unlocked by user.");
-                    Intent intent = new Intent(MyNotificationListenerService.ACTION_UNCHECK_TOGGLE);
-                    sendBroadcast(intent);
+                    Intent uncheckIntent = new Intent(MyNotificationListenerService.ACTION_UNCHECK_TOGGLE);
+                    sendBroadcast(uncheckIntent);
                     // Check charging status again on unlock to be sure
                     IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = context.registerReceiver(null, filter);
