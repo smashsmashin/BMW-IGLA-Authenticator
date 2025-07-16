@@ -48,7 +48,6 @@ public class LauncherActivity extends Activity {
         }
 
         Toast.makeText(this, "Author ID Assistant service started.", Toast.LENGTH_LONG).show();
-        finish();
     }
 
     @Override
