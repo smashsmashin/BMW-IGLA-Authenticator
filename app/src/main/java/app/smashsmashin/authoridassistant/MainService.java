@@ -18,6 +18,7 @@ import android.util.Log;
 import android.app.KeyguardManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.content.ServiceConnection;
 
 
 public class MainService extends Service {
@@ -30,6 +31,22 @@ public class MainService extends Service {
     private boolean isWirelessCharging = false;
     private boolean isScreenUnlocked = false;
     private boolean isKeyFobActivated = false;
+    private MyNotificationListenerService notificationListenerService;
+    private boolean isBound = false;
+
+    private ServiceConnection connection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            MyNotificationListenerService.LocalBinder binder = (MyNotificationListenerService.LocalBinder) service;
+            notificationListenerService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            isBound = false;
+        }
+    };
 
     @Override
     public void onCreate() {
@@ -37,6 +54,9 @@ public class MainService extends Service {
         Log.d(LOG_TAG, "onCreate: Service creating.");
         createNotificationChannel();
         startForeground(NOTIFICATION_ID, createNotification());
+
+        Intent intent = new Intent(this, MyNotificationListenerService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         registerPowerReceiver();
         Log.d(LOG_TAG, "onCreate: Power receiver registered.");
@@ -157,13 +177,17 @@ public class MainService extends Service {
         isKeyFobActivated = false;
         AppState.isKeyFobActionPending = true;
         AppState.shouldActivate = false;
-        try {
-            Intent intent = new Intent();
-            intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-        } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "Author ID app not found.");
+        // try {
+        //     Intent intent = new Intent();
+        //     intent.setComponent(new ComponentName("com.dma.author.authorid", "com.dma.author.authorid.view.SplashActivity"));
+        //     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //     startActivity(intent);
+        // } catch (ActivityNotFoundException e) {
+        //     Log.e(TAG, "Author ID app not found.");
+        // }
+
+        if (isBound) {
+            notificationListenerService.uncheckToggleButton();
         }
     }
 
