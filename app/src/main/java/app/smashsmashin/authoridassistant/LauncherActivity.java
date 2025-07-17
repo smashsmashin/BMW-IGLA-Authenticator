@@ -1,4 +1,4 @@
-package com.example.wirelessunlock;
+package app.smashsmashin.authoridassistant;
 
 import android.Manifest;
 import android.app.Activity;
@@ -14,17 +14,21 @@ import androidx.core.content.ContextCompat;
 import android.provider.Settings;
 import android.net.Uri;
 
-public class DummyLauncherActivity extends Activity {
+public class LauncherActivity extends Activity {
     private static final int NOTIFICATION_PERMISSION_REQUEST_CODE = 101;
     private static final int SYSTEM_ALERT_WINDOW_PERMISSION_REQUEST_CODE = 102;
-    private static final String TAG = "DummyLauncherActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+    }
 
-        // Start the PowerMonitoringService
-        Intent serviceIntent = new Intent(this, PowerMonitoringService.class);
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Start the MainService
+        Intent serviceIntent = new Intent(this, MainService.class);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent);
         } else {
@@ -43,17 +47,12 @@ public class DummyLauncherActivity extends Activity {
             if (!Settings.canDrawOverlays(this)) {
                 Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:" + getPackageName()));
-                // Before starting activity, show a toast or dialog explaining why this permission is needed.
                 Toast.makeText(this, "Please grant 'Draw over other apps' permission for full functionality.", Toast.LENGTH_LONG).show();
                 startActivityForResult(intent, SYSTEM_ALERT_WINDOW_PERMISSION_REQUEST_CODE);
-                // Note: We finish() immediately after. The user will grant permission and return to whatever screen they were on.
-                // The service will attempt to start activities later; hopefully, by then, the permission is granted.
-                // A more robust implementation might delay certain actions until this permission is confirmed via onActivityResult.
             }
         }
 
-        Toast.makeText(this, "WirelessUnlock monitoring service started/checked.", Toast.LENGTH_LONG).show();
-        // Immediately finish the activity
+        Toast.makeText(this, "Author ID Assistant service started.", Toast.LENGTH_LONG).show();
         finish();
     }
 
