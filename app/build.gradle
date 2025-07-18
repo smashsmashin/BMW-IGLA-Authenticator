@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.wirelessunlock'
+    namespace 'app.smashsmashin.authoridassistant'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.wirelessunlock"
+        applicationId "app.smashsmashin.authoridassistant"
         minSdk 26 // Android 8.0 (Oreo) - Good baseline for Camera2 and background restrictions handling
         targetSdk 34
         versionCode 1
